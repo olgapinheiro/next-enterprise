@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 /**
  * Copyright (c) HashiCorp, Inc.
  * SPDX-License-Identifier: MPL-2.0
@@ -7,35 +8,35 @@
 
 // edited to work with the appdir by @raphaelbadia
 
-const gzSize = require("gzip-size")
-const mkdirp = require("mkdirp")
-const fs = require("fs")
-const path = require("path")
+import { sync } from "gzip-size"
+import { sync as _sync } from "mkdirp"
+import { accessSync, constants, readFileSync, writeFileSync } from "fs"
+import { join } from "path"
 
 // Pull options from `package.json`
 const options = getOptions()
 const BUILD_OUTPUT_DIRECTORY = getBuildOutputDirectory(options)
 
 // first we check to make sure that the build output directory exists
-const nextMetaRoot = path.join(process.cwd(), BUILD_OUTPUT_DIRECTORY)
+const nextMetaRoot = join(process.cwd(), BUILD_OUTPUT_DIRECTORY)
 try {
-  fs.accessSync(nextMetaRoot, fs.constants.R_OK)
+  accessSync(nextMetaRoot, constants.R_OK)
 } catch (err) {
   console.error(
-    `No build output found at "${nextMetaRoot}" - you may not have your working directory set correctly, or not have run "next build".`
+    `No build output found at "${nextMetaRoot}" - you may not have your working directory set correctly, or not have run "next build". Error: ${err}`
   )
   process.exit(1)
 }
 
 // if so, we can import the build manifest
-const buildMeta = require(path.join(nextMetaRoot, "build-manifest.json"))
-const appDirMeta = require(path.join(nextMetaRoot, "app-build-manifest.json"))
+const buildMeta = require(join(nextMetaRoot, "build-manifest.json"))
+const appDirMeta = require(join(nextMetaRoot, "app-build-manifest.json"))
 
 // this memory cache ensures we dont read any script file more than once
 // bundles are often shared between pages
 const memoryCache = {}
 
-// since _app is the template that all other pages are rendered into,
+/* // since _app is the template that all other pages are rendered into,
 // every page must load its scripts. we'll measure its size here
 const globalBundle = buildMeta.pages["/_app"]
 const globalBundleSizes = getScriptSizes(globalBundle)
@@ -49,7 +50,7 @@ const allPageSizes = Object.values(buildMeta.pages).reduce((acc, scriptPaths, i)
   acc[pagePath] = scriptSizes
 
   return acc
-}, {})
+}, {}) */
 
 const globalAppDirBundle = buildMeta.rootMainFiles
 const globalAppDirBundleSizes = getScriptSizes(globalAppDirBundle)
@@ -71,8 +72,8 @@ const rawData = JSON.stringify({
 // log ouputs to the gh actions panel
 console.log(rawData)
 
-mkdirp.sync(path.join(nextMetaRoot, "analyze/"))
-fs.writeFileSync(path.join(nextMetaRoot, "analyze/__bundle_analysis.json"), rawData)
+_sync(join(nextMetaRoot, "analyze/"))
+writeFileSync(join(nextMetaRoot, "analyze/__bundle_analysis.json"), rawData)
 
 // --------------
 // Util Functions
@@ -97,16 +98,16 @@ function getScriptSizes(scriptPaths) {
 // given an individual path to a script, return its file size
 function getScriptSize(scriptPath) {
   const encoding = "utf8"
-  const p = path.join(nextMetaRoot, scriptPath)
+  const p = join(nextMetaRoot, scriptPath)
 
   let rawSize, gzipSize
   if (Object.keys(memoryCache).includes(p)) {
     rawSize = memoryCache[p][0]
     gzipSize = memoryCache[p][1]
   } else {
-    const textContent = fs.readFileSync(p, encoding)
+    const textContent = readFileSync(p, encoding)
     rawSize = Buffer.byteLength(textContent, encoding)
-    gzipSize = gzSize.sync(textContent)
+    gzipSize = sync(textContent)
     memoryCache[p] = [rawSize, gzipSize]
   }
 
@@ -117,7 +118,7 @@ function getScriptSize(scriptPath) {
  * Reads options from `package.json`
  */
 function getOptions(pathPrefix = process.cwd()) {
-  const pkg = require(path.join(pathPrefix, "package.json"))
+  const pkg = require(join(pathPrefix, "package.json"))
 
   return { ...pkg.nextBundleAnalysis, name: pkg.name }
 }
