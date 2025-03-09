@@ -22,7 +22,10 @@
     "coupling-graph": "npx madge --extensions js,jsx,ts,tsx,css,md,mdx ./ --exclude '.next|tailwind.config.js|reset.d.ts|prettier.config.js|postcss.config.js|playwright.config.ts|next.config.js|next-env.d.ts|instrumentation.ts|e2e/|README.md|.storybook/|.eslintrc.js' --image graph.svg"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.12.4",
     "@next/bundle-analyzer": "^15.1.6",
+    "@opentelemetry/instrumentation": ">=0.46.0 && <1.0.0",
+    "@opentelemetry/sdk-logs": ">=0.46.0 && <1.0.0",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -44,6 +47,7 @@
     "@semantic-release/github": "^10.0.5",
     "@semantic-release/npm": "^12.0.1",
     "@semantic-release/release-notes-generator": "^13.0.0",
+    "@supabase/supabase-js": "^2.49.1",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@vercel/otel": "^1.8.3",
     "class-variance-authority": "^0.7.0",
